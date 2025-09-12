@@ -38,3 +38,52 @@
         </div>
       </div>
     </section>
+
+    <main class="max-w-7xl mx-auto px-6 -mt-6">
+      <div class="grid grid-cols-12 gap-6 items-start">
+
+        <aside class="col-span-12 lg:col-span-2">
+          <div class="bg-white rounded-lg shadow p-5 sticky top-8">
+            <h3 class="font-semibold mb-4">Categories</h3>
+            <div id="categories" class="flex flex-col gap-2 text-sm">
+            </div>
+          </div>
+        </aside>
+        <section class="col-span-12 lg:col-span-7">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-xl font-semibold">Choose Your Trees</h2>
+            <div>
+              <button id="sortPrice" class="btn btn-sm btn-ghost">Sort By Price</button>
+            </div>
+          </div>
+
+          <div id="spinner" class="hidden py-12 flex justify-center">
+            <span class="loading loading-ring loading-lg text-emerald-600"></span>
+          </div>
+
+          <div id="plants" class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+          </div>
+
+          <p id="noItemsMsg" class="hidden text-center text-sm text-gray-500 mt-8">No items found for this category.</p>
+        </section>
+        <aside class="col-span-12 lg:col-span-3">
+          <div id="cart-sidebar" class="bg-white rounded-lg shadow p-5 sticky top-8">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="font-semibold">Your Cart</h3>
+              <button id="close-cart" class="btn btn-ghost btn-sm">✖</button>
+            </div>
+
+            <ul id="cart-list" class="space-y-3 max-h-80 overflow-auto">
+            </ul>
+
+            <div class="mt-4 flex items-center justify-between">
+              <div class="font-semibold">Total:</div>
+              <div id="cart-total" class="text-lg font-bold text-emerald-800">$0</div>
+            </div>
+
+            <div class="mt-4">
+              <button id="checkoutBtn" class="btn w-full bg-emerald-700 text-white">Checkout</button>
+            </div>
+          </div>
+        </aside>
+      </div>
