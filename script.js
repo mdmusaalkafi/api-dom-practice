@@ -326,4 +326,47 @@
       cartSidebarEl.style.display = 'none';
     }
   });
-}
+
+  //Form: Plant a Tree
+
+  plantForm?.addEventListener('submit', (ev) => {
+    ev.preventDefault();
+    const name = donorNameEl.value?.trim();
+    const email = donorEmailEl.value?.trim();
+    const number = Number(donationCountEl.value || 0);
+    if (!name || !email || !number || number < 1) {
+      toast('Please provide valid details.');
+      return;
+    }
+    const existing = JSON.parse(localStorage.getItem('greenEarthDonations') || '[]');
+    existing.push({ name, email, number, date: new Date().toISOString() });
+    localStorage.setItem('greenEarthDonations', JSON.stringify(existing));
+    toast('Thank you! Your plant request is recorded.');
+    plantForm.reset();
+  });
+
+  // ----------------------
+  // Sorting
+  // ----------------------
+  sortPriceBtn?.addEventListener('click', () => {
+    sortAsc = !sortAsc;
+    renderPlants(lastPlants);
+    sortPriceBtn.textContent = sortAsc ? 'Sort By Price' : 'Sort By Price (desc)';
+  });
+
+  // ----------------------
+  // Init
+  // ----------------------
+  (function init() {
+    // set year
+    if (yearEl) yearEl.textContent = new Date().getFullYear();
+
+    // init cart from storage
+    cart = JSON.parse(localStorage.getItem('greenEarthCart_v1') || '[]');
+    renderCart();
+
+    // load categories and plants
+    loadCategories().then(() => loadPlantsForCategory('all'));
+  })();
+
+})();
