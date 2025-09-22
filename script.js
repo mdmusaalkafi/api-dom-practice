@@ -103,4 +103,95 @@
       hideSpinner();
     }
   }
+
+//    Categories
+  async function loadCategories() {
+    const json = await fetchJSON(`${API_BASE}/categories`);
+    const arr = extractArray(json);
+    categories = (arr || []).map((c, idx) => {
+      return {
+        id: String(c.id ?? c._id ?? c.category_id ?? makeId(JSON.stringify(c) + idx)),
+        name: c.name ?? c.category ?? c.category_name ?? c.title ?? `Category ${idx + 1}`,
+        raw: c
+      };
+    });
+    // ensure 'All'
+    categories.unshift({ id: 'all', name: 'All' });
+    renderCategories();
+  }
+
+  function renderCategories() {
+    categoriesEl.innerHTML = '';
+    categories.forEach((cat, i) => {
+      const btn = document.createElement('button');
+      // DaisyUI / Tailwind classes
+      btn.className = 'btn btn-ghost btn-sm normal-case text-left justify-start';
+      btn.textContent = cat.name;
+      btn.dataset.id = cat.id;
+      btn.addEventListener('click', () => {
+        // highlight
+        categoriesEl.querySelectorAll('button').forEach(b => b.classList.remove('bg-emerald-800', 'text-white'));
+        btn.classList.add('bg-emerald-800', 'text-white');
+        loadPlantsForCategory(cat.id);
+      });
+      categoriesEl.appendChild(btn);
+      // auto-click first (All)
+      if (i === 0) btn.classList.add('bg-emerald-800', 'text-white');
+    });
+  }
+
+  // Plants
+  async function loadPlantsForCategory(id = 'all') {
+    noItemsMsgEl && noItemsMsgEl.classList.add('hidden');
+
+    const url = id === 'all' ? `${API_BASE}/plants` : `${API_BASE}/category/${id}`;
+    const json = await fetchJSON(url);
+    const arr = extractArray(json) || [];
+    lastPlants = arr.map((p, i) => {
+      return {
+        __id: String(p.id ?? p._id ?? p.plant_id ?? p.slug ?? makeId(JSON.stringify(p) + i)),
+        raw: p,
+        name: safeName(p),
+        image: safeImage(p),
+        description: shortDesc(p),
+        category: p.category ?? p.category_name ?? (categories.find(c => c.id === id)?.name ?? 'Various'),
+        price: getPrice(p)
+      };
+    });
+    renderPlants(lastPlants);
+  }
+
+  function renderPlants(items) {
+    plantsEl.innerHTML = '';
+    if (!items || items.length === 0) {
+      noItemsMsgEl && noItemsMsgEl.classList.remove('hidden');
+      return;
+    }
+    noItemsMsgEl && noItemsMsgEl.classList.add('hidden');
+
+    // sort
+    const sorted = [...items].sort((a, b) => sortAsc ? (a.price - b.price) : (b.price - a.price));
+
+    for (const item of sorted) {
+      const card = document.createElement('div');
+      card.className = 'bg-white rounded-lg shadow overflow-hidden';
+
+      card.innerHTML = `
+        <img src="${item.image}" alt="${escapeHtml(item.name)}" class="w-full h-40 object-cover" />
+        <div class="p-4">
+          <button class="plant-name text-left block font-semibold text-lg hover:underline" data-id="${item.__id}">${escapeHtml(item.name)}</button>
+          <p class="mt-2 text-sm text-gray-600">${escapeHtml(item.description)}</p>
+          <div class="mt-3 flex items-center justify-between">
+            <div class="text-sm text-gray-500">Category: ${escapeHtml(item.category)}</div>
+            <div class="text-lg font-semibold text-emerald-800">${formatCurrency(item.price)}</div>
+          </div>
+          <div class="mt-3">
+            <button class="add-cart btn btn-success btn-block mt-2" data-id="${item.__id}">Add to Cart</button>
+          </div>
+        </div>
+      `;
+      plantsEl.appendChild(card);
+    }
+  }
+
 }
