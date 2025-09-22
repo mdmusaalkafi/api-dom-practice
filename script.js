@@ -252,4 +252,78 @@
     overlay?.addEventListener('click', (ev) => { if (ev.target === overlay) closeModal(); });
     modalAdd?.addEventListener('click', () => { addToCart(item); closeModal(); });
   }
+  // Cart
+  function saveCart() {
+    localStorage.setItem('greenEarthCart_v1', JSON.stringify(cart));
+    renderCart();
+  }
+
+  function addToCart(item) {
+    const id = item.__id;
+    const existing = cart.find(c => c.id === id);
+    if (existing) {
+      existing.qty = (existing.qty || 1) + 1;
+    } else {
+      cart.push({ id, name: item.name, price: item.price, qty: 1 });
+    }
+    saveCart();
+    toast(`${item.name} added to cart`);
+  }
+
+  function removeFromCart(id) {
+    cart = cart.filter(it => it.id !== id);
+    saveCart();
+    toast('Item removed');
+  }
+
+  function renderCart() {
+    cartListEl.innerHTML = '';
+    if (!cart.length) {
+      cartListEl.innerHTML = '<li class="text-sm text-gray-500">Cart is empty.</li>';
+      cartTotalEl.textContent = '$0';
+      return;
+    }
+    let total = 0;
+    for (const it of cart) {
+      total += it.price * (it.qty || 1);
+      const li = document.createElement('li');
+      li.className = 'flex justify-between items-start bg-emerald-50 p-3 rounded';
+      li.innerHTML = `
+        <div>
+          <div class="font-medium">${escapeHtml(it.name)}</div>
+          <div class="text-xs text-gray-600">${formatCurrency(it.price)} × ${it.qty}</div>
+        </div>
+        <div>
+          <button class="btn btn-ghost btn-sm cart-remove" data-id="${it.id}">✖</button>
+        </div>
+      `;
+      cartListEl.appendChild(li);
+    }
+    cartTotalEl.textContent = formatCurrency(total);
+  }
+
+  // delegated remove
+  cartListEl.addEventListener('click', (e) => {
+    const btn = e.target.closest('.cart-remove');
+    if (!btn) return;
+    const id = btn.dataset.id;
+    removeFromCart(id);
+  });
+
+  // checkout button simple behaviour
+  checkoutBtn?.addEventListener('click', () => {
+    if (!cart.length) { toast('Cart is empty'); return; }
+    toast(`Checkout - total ${cartTotalEl.textContent}`);
+    cart = [];
+    saveCart();
+  });
+
+  // allow closing the right sidebar
+  closeCartBtn?.addEventListener('click', () => {
+    if (cartSidebarEl.style.display === 'none') {
+      cartSidebarEl.style.display = '';
+    } else {
+      cartSidebarEl.style.display = 'none';
+    }
+  });
 }
