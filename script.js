@@ -194,4 +194,62 @@
     }
   }
 
+  // escape text for safety
+  function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
+  }
+
+  // delegated events on plants container
+  plantsEl.addEventListener('click', (e) => {
+    const addBtn = e.target.closest('.add-cart');
+    if (addBtn) {
+      const id = addBtn.dataset.id;
+      const item = lastPlants.find(x => x.__id === id);
+      if (item) addToCart(item);
+      return;
+    }
+    const nameBtn = e.target.closest('.plant-name');
+    if (nameBtn) {
+      const id = nameBtn.dataset.id;
+      const item = lastPlants.find(x => x.__id === id);
+      if (item) openModalForItem(item);
+    }
+  });
+
+  // ----------------------
+  // Modal
+  // ----------------------
+  function openModalForItem(item) {
+    modalContainer.innerHTML = `
+      <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" id="__modal_overlay">
+        <div class="bg-white rounded-lg w-11/12 md:w-2/3 lg:w-1/2 p-6 relative">
+          <button id="__close_modal" class="btn btn-ghost btn-sm absolute top-3 right-3">✖</button>
+          <div class="grid md:grid-cols-2 gap-4">
+            <div>
+              <img src="${item.image}" alt="${escapeHtml(item.name)}" class="w-full h-64 object-cover rounded"/>
+            </div>
+            <div>
+              <h3 class="text-xl font-semibold">${escapeHtml(item.name)}</h3>
+              <p class="text-sm text-gray-700 mt-2">${escapeHtml(item.raw.description ?? item.raw.detail ?? item.raw.plant_description ?? '')}</p>
+              <div class="mt-4">
+                <div class="text-lg font-bold text-emerald-600">${formatCurrency(item.price)}</div>
+                <div class="mt-3">
+                  <button id="__modal_add" class="btn btn-success">Add to Cart</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    const overlay = document.getElementById('__modal_overlay');
+    const closeBtn = document.getElementById('__close_modal');
+    const modalAdd = document.getElementById('__modal_add');
+
+    function closeModal() { modalContainer.innerHTML = ''; }
+    closeBtn?.addEventListener('click', closeModal);
+    overlay?.addEventListener('click', (ev) => { if (ev.target === overlay) closeModal(); });
+    modalAdd?.addEventListener('click', () => { addToCart(item); closeModal(); });
+  }
 }
